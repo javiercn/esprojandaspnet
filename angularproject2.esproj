@@ -1,12 +1,16 @@
-<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.4.0-alpha">
+﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/0.4.0-alpha">
+  <Import Project="$(MSBuildExtensionsPath)\NuGet.props" Condition="Exists('$(MSBuildExtensionsPath)\NuGet.props')" />
+  <PropertyGroup Label="Globals">
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ProjectGuid>6a419fde-1be1-4fef-ad2e-6fa09bc95514</ProjectGuid>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <StartupCommand>npm start</StartupCommand>
-  <JavaScriptTestFramework>Jasmine</JavaScriptTestFramework>
+    <JavaScriptTestFramework>Jasmine</JavaScriptTestFramework>
   </PropertyGroup>
   <ItemGroup>
     <Script Include="**" Exclude="*.esproj;**\node_modules\**" />
   </ItemGroup>
-
   <!-- This target is copied from the ASP.NET SPA template in order to ensure node_modules are in place. -->
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
@@ -17,4 +21,34 @@
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
   </Target>
+
+  <Target Name="GetTargetFrameworks" Returns="@(_TargetFrameworks)">
+    <ItemGroup>
+      <_TargetFrameworks Include="$(MSBuildProjectFullPath)">
+        <TargetPlatformMonikers>Windows,Version=7.0</TargetPlatformMonikers>
+        <HasSingleTargetFramework>true</HasSingleTargetFramework>
+        <TargetFrameworkMonikers>.NETStandard,Version=v2.0</TargetFrameworkMonikers>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <IsRidAgnostic>true</IsRidAgnostic>
+        <Platforms>AnyCPU</Platforms>
+      </_TargetFrameworks>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetTargetPath" />
+
+  <Target Name="GetCopyToPublishDirectoryItems" Returns="@(_CopyToPublishDirectoryItems)">
+    <Exec Command="npm run build" WorkingDirectory="$(SpaRoot)"></Exec>
+    <ItemGroup>
+      <_NpmPublishedContent Include="$(MSBuildProjectDirectory)\dist\angularproject2\**" />
+      <_CopyToPublishDirectoryItems Include="@(_NpmPublishedContent->'%(FullPath)')" TargetPath="wwwroot\%(RecursiveDir)\%(FileName)%(Extension)" CopyToPublishDirectory="Always" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="$(MSBuildExtensionsPath)\NuGet.targets" Condition="Exists('$(MSBuildExtensionsPath)\NuGet.targets')" />
+
+  <Target Name="Restore">
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+  </Target>
+
 </Project>
